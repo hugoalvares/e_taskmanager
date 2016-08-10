@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en" ng-app="app">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- Angular Material style sheet -->
+	<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0-rc2/angular-material.min.css">
+
+	<!-- Angular Material requires Angular.js Libraries -->
+	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular-animate.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular-aria.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular-messages.min.js"></script>
+
+	<!-- Angular Material Library -->
+	<script src="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0-rc2/angular-material.min.js"></script>
+
+	<!-- Styles -->
+	<link rel="stylesheet" href="css/style.css">
+
+    <!-- Modules -->
+    <script src="js/modules/app.js"></script>	
+
+    <!-- Services -->
+    <script src="js/services/TaskService.js"></script>
+
+	<!-- Controllers -->
+    <script src="js/controllers/TaskController.js"></script>
+
+    <!-- Directives -->
+    <script src="js/directives/task.js"></script>
+    <script src="js/directives/ngenter.js"></script>
+
+</head>
+<body ng-cloak>
+
+	<div ng-controller="TaskController">
+		<section layout="row" layout-align="center center" layout-wrap>
+			<md-input-container>
+				<input ng-enter="createTask()" ng-model="currentTask" placeholder="O que precisa ser feito?">
+	        </md-input-container>
+			<md-button ng-click="createTask()" class="md-raised md-primary">Criar Tarefa</md-button>
+		</section>
+		<section layout="row" layout-align="center center" layout-wrap>
+      		<md-button class="md-raised" ng-click="setFilter('all');" ng-class="{ 'md-primary': filter == 'all' }">Todos</md-button>
+      		<md-button class="md-raised" ng-click="setFilter('pending');" ng-class="{ 'md-primary': filter == 'pending' }">Pendentes</md-button>
+      		<md-button class="md-raised" ng-click="setFilter('done');" ng-class="{ 'md-primary': filter == 'done' }">Feitos</md-button>
+      	</section>
+      	<div ng-repeat="task in tasks">
+      		<directivetask></directivetask>
+      	</div>
+
+	</div>
+	
+</body>
+</html>

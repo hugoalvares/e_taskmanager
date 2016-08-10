@@ -1,0 +1,8 @@
+<md-card ng-click="setCurrentTask(task.id);">
+	<md-card-title>
+		<md-card-title-text>
+			<span class="md-headline" ng-bind="task.title"></span>
+		</md-card-title-text>
+	</md-card-title>
+	<img ng-src="{{ task.image }}" ng-show="task.id == currentTaskId">
+</md-card>
