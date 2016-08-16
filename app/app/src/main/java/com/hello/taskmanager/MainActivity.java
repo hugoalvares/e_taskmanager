@@ -2,14 +2,15 @@ package com.hello.taskmanager;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.widget.ImageView;
 import android.widget.ListView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import com.hello.taskmanager.ListAdapter.customButtonListener;
+import com.koushikdutta.ion.Ion;
 
 public class MainActivity extends Activity implements AsyncResponse, customButtonListener {
 
@@ -28,6 +30,7 @@ public class MainActivity extends Activity implements AsyncResponse, customButto
     private final char constPendingStatus = 'P';
     static final int REQUEST_IMAGE_CAPTURE = 1;
     private String mCurrentPhotoPath;
+    private Task selectedTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,24 +59,47 @@ public class MainActivity extends Activity implements AsyncResponse, customButto
         httpAsyncTask.execute(serverUrl + "gettasks");
     }
 
-    private void concludeTask(int idTask, String imgPath) {
+    private LatLng getLocation() {
+        // Get the location manager
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+        String bestProvider = locationManager.getBestProvider(criteria, false);
+        Location location = locationManager.getLastKnownLocation(bestProvider);
+        Double lat,lon;
+        try {
+            lat = location.getLatitude();
+            lon = location.getLongitude();
+            return new LatLng(lat, lon);
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private void concludeTask(Task task) {
+        String imgPath = task.getImgPath();
+        int idTask = task.getIdTask();
+
+        uploadImage(idTask, imgPath);
+
+        LatLng latLng = getLocation();
+        String latitude = String.valueOf(latLng.getLatitude());
+        String longitude = String.valueOf(latLng.getLongitude());
+
         MyAsyncTask httpAsyncTask = new MyAsyncTask();
         httpAsyncTask.delegate = this;
-        httpAsyncTask.execute(serverUrl + "concludetask?idtask=" + Integer.toString(idTask) + "&imgpath=" + imgPath);
+        httpAsyncTask.execute(serverUrl + "concludetask?idtask=" + Integer.toString(idTask) + "&imgpath=" + Integer.toString(idTask) + ".jpg" + "&latitude=" + latitude + "&longitude=" + longitude);
     }
 
     private void buildTasks(String jsonResponse) {
         Type listType = new TypeToken<ArrayList<Task>>(){}.getType();
         taskList = (ArrayList<Task>) new Gson().fromJson(jsonResponse, listType);
 
-        // mapping because I couldn't do this the right way
         ArrayList<String> arStTasks = new ArrayList<String>();
-        int index = 0;
         for (Task currentTask : taskList) {
             if (currentTask.getStatus() == constPendingStatus) {
                 arStTasks.add(currentTask.getTitle());
-                currentTask.setIndex(index);
-                index++;
             }
         }
 
@@ -90,10 +116,9 @@ public class MainActivity extends Activity implements AsyncResponse, customButto
 
     private void startTask(String title) {
         // @ToDo fix this
-        int idTask = 0;
         for (Task currentTask : taskList) {
             if (currentTask.getTitle() == title) {
-                idTask = currentTask.getIdTask();
+                selectedTask = currentTask;
                 break;
             }
         }
@@ -111,24 +136,38 @@ public class MainActivity extends Activity implements AsyncResponse, customButto
                 startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE);
             }
         }
-
-        concludeTask(idTask, mCurrentPhotoPath);
     }
 
     private File createImageFile() throws IOException {
-        String imageFileName = "taskimg";
+        String imageFileName = "idtask" + Integer.toString(selectedTask.getIdTask());
         File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
                 imageFileName, // prefix
                 ".jpg",        // suffix
                 storageDir     // directory
         );
-        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+        mCurrentPhotoPath = image.getAbsolutePath();
         return image;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            selectedTask.setImgPath(mCurrentPhotoPath);
+            concludeTask(selectedTask);
+        }
     }
 
     public void processFinish(String jsonResponse){
         buildTasks(jsonResponse);
+    }
+
+    public void uploadImage(int idTask, String imgPath) {
+        Ion.with(this)
+            .load(serverUrl + "uploadimage")
+            .setMultipartFile("file", "image/jpeg", new File(imgPath))
+            .setMultipartParameter("idtask", Integer.toString(idTask))
+            .asJsonObject();
     }
 
 }

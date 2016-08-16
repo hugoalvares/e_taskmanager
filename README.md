@@ -7,6 +7,7 @@ db/taskmanager.sql
 
 - To run the server (port 8080):
 java -jar ./server/target/server-0.1.0.jar
+Change the imgDir in /server/src/main/java/server/Controller.java
 
 - To run the site (port 8888):
 cd ./site

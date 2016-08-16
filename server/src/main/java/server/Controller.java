@@ -28,6 +28,8 @@ import hibernate.HibernateUtil;
 @RestController
 public class Controller {
 	
+	private String imgDir = "C:/workfolder/strider/e_taskmanager/site/images/";
+	
 	private String getTasksJson(Session session) {
 		List<Task> list = session.createCriteria(Task.class).list();
 		Gson gson = new Gson();
@@ -71,12 +73,14 @@ public class Controller {
     
     @CrossOrigin(origins = "http://localhost:8888")
     @RequestMapping("/concludetask")
-    public String deleteTask(@RequestParam(value="idtask") int idTask, @RequestParam(value="imgpath") String imgPath) {
+    public String concludeTask(@RequestParam(value="idtask") int idTask, @RequestParam(value="imgpath") String imgPath, @RequestParam(value="latitude") Double latitude, @RequestParam(value="longitude") Double longitude) {
     	Session session = HibernateUtil.getSessionFactory().openSession();
 	    session.beginTransaction();
 	    Task task = (Task) session.get(Task.class, idTask);
 	    task.setStatus('D');
 	    task.setImgPath(imgPath);
+	    task.setLatitude(latitude);
+	    task.setLongitude(longitude);
 	    session.save(task);
 	    session.getTransaction().commit();
 	    String jsonTasks = getTasksJson(session);
@@ -84,44 +88,22 @@ public class Controller {
     	return jsonTasks;
     }
     
-    /*
-    @CrossOrigin(origins = "http://localhost:8888")
-    @RequestMapping(value = { "/uploadimage" }, method = RequestMethod.POST, produces = "application/json")
-	public String uploadImage(final HttpServletRequest request) throws IOException {
-		InputStream is = null;
-		is = request.getInputStream();
-		byte[] bytes = IOUtils.toByteArray(is);
-		System.out.println("read " + bytes.length + " bytes.");
-		
-		Session session = HibernateUtil.getSessionFactory().openSession();
-		String jsonTasks = getTasksJson(session);
-	    session.close();
-    	return jsonTasks;
-	}
-    
     @RequestMapping(value = "/uploadimage", method = RequestMethod.POST)
-	public @ResponseBody
-	String uploadImage(@RequestParam("name") String name, @RequestParam("file") MultipartFile file) {
+	public String uploadImage(@RequestParam("file") MultipartFile file, @RequestParam("idtask") int idTask) {
 		if (!file.isEmpty()) {
 			try {
 				byte[] bytes = file.getBytes();
-				String rootPath = Controller.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-				File dir = new File(rootPath + File.separator + "tmpFiles");
-				if (!dir.exists()){
-					dir.mkdirs();
-				}
-				File serverFile = new File(dir.getAbsolutePath() + File.separator + name);
+				File serverFile = new File(imgDir + Integer.toString(idTask) + ".jpg");
 				BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
 				stream.write(bytes);
 				stream.close();
-				return "{'result':'1'}";
+				return "{'result':'ok'}";
 			} catch (Exception e) {
-				return "{'result':'0'}";
+				return "{'result':'not ok'}";
 			}
 		} else {
-			return "{'result':'-1'}";
+			return "{'result':'empty file'}";
 		}
-	}    
-    */
+	}
     
 }

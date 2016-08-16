@@ -8,6 +8,6 @@
 		<section layout="row" layout-align="center center" layout-wrap>
   			<md-button class="md-raised" ng-click="deleteTask(task.idtask);">Apagar</md-button>
   		</section>
-		<img ng-src="{{ task.imgPath }}">
+		<img ng-src="{{ 'images/' + task.idtask + '.jpg' }}">
 	</div>
 </md-card>
