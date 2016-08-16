@@ -1,8 +1,13 @@
-<md-card ng-click="setCurrentTask(task.id);">
+<md-card ng-click="setCurrentTask(task.idtask);" ng-show="checkFilter(task.status)">
 	<md-card-title>
 		<md-card-title-text>
 			<span class="md-headline" ng-bind="task.title"></span>
 		</md-card-title-text>
 	</md-card-title>
-	<img ng-src="{{ task.image }}" ng-show="task.id == currentTaskId">
+	<div ng-show="task.idtask == currentIdTask">
+		<section layout="row" layout-align="center center" layout-wrap>
+  			<md-button class="md-raised" ng-click="deleteTask(task.idtask);">Apagar</md-button>
+  		</section>
+		<img ng-src="{{ task.imgPath }}">
+	</div>
 </md-card>

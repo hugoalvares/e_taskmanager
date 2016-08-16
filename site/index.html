@@ -21,9 +21,6 @@
     <!-- Modules -->
     <script src="js/modules/app.js"></script>	
 
-    <!-- Services -->
-    <script src="js/services/TaskService.js"></script>
-
 	<!-- Controllers -->
     <script src="js/controllers/TaskController.js"></script>
 
@@ -37,7 +34,7 @@
 	<div ng-controller="TaskController">
 		<section layout="row" layout-align="center center" layout-wrap>
 			<md-input-container>
-				<input ng-enter="createTask()" ng-model="currentTask" placeholder="O que precisa ser feito?">
+				<input ng-enter="createTask()" ng-model="currentTaskTitle" placeholder="O que precisa ser feito?">
 	        </md-input-container>
 			<md-button ng-click="createTask()" class="md-raised md-primary">Criar Tarefa</md-button>
 		</section>
